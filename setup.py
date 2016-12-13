@@ -1,4 +1,4 @@
-"""The setup for our http-server project"""
+"""The setup for our http-server project."""
 
 from setuptools import setup
 
@@ -17,4 +17,9 @@ setup(
     extras_require={
         "test": ["tox", "pytest", "pytest-watch", "pytest-cov"]
     },
+    entry_points={
+        'console_scripts': [
+            'client = client:main'
+        ]
+    }
 )
