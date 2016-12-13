@@ -29,3 +29,9 @@ def test_response_error_number_of_crlf():
     """Test server response contains the right amount of CRLF."""
     from server import response_ok
     assert response_ok().decode("utf8").count('<CRLF>') == 5
+
+
+def test_reponse_client():
+    """Test that client receives response ok."""
+    from client import client
+    assert client("Something")[0][:15] == "HTTP/1.1 200 OK"
