@@ -1,8 +1,7 @@
 """Tests for our http server project."""
 
 
-def test_echo_server():
-    """Test server echos back message sent by client."""
-    from client import client
-    message = "This is the ultimate test!"
-    assert client(message) == message
+def test_response_ok():
+    """Test server response ok."""
+    from server import response_ok
+    assert response_ok().decode("utf8")[-12:] == "<CRLF><CRLF>"
