@@ -1,5 +1,6 @@
 """Module to set up the server."""
 import socket
+import email.utils
 
 
 def server():
@@ -24,3 +25,17 @@ def server():
                 conn.close()
             break
     server.close()
+
+
+def response_ok():
+    """Set up and return 200 response."""
+    headers = {
+        "Content-Type": "text/plain",
+        "Date": email.utils.formatdate(usegmt=True),
+        "Connection": "close"
+    }
+    response = "HTTP/1.1 200 OK<CRLF>"
+    for key in headers:
+        response += key + ': ' + headers[key] + '<CRLF>'
+    response += '<CRLF>'
+    return response.encode("utf8")
