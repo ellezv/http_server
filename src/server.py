@@ -39,3 +39,7 @@ def response_ok():
         response += key + ': ' + headers[key] + '<CRLF>'
     response += '<CRLF>'
     return response.encode("utf8")
+
+
+def response_error():
+    pass
