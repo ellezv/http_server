@@ -13,7 +13,6 @@ def client(message):
     client_.sendall(message.encode('utf8'))
     buffer_length = 8
     response = ''
-    print(client_)
     while response[-3:] != "END":
         response += client_.recv(buffer_length).decode('utf8')
     print(response[:-3])
