@@ -42,4 +42,14 @@ def response_ok():
 
 
 def response_error():
-    pass
+    """Set up and return 500 response."""
+    headers = {
+        "Content-Type": "text/plain",
+        "Date": email.utils.formatdate(usegmt=True),
+        "Connection": "close"
+    }
+    response = "HTTP/1.1 500 Internal Server Error<CRLF>"
+    for key in headers:
+        response += key + ': ' + headers[key] + '<CRLF>'
+    response += '<CRLF>'
+    return response.encode("utf8")
