@@ -16,3 +16,5 @@ def server():
     while message[-3:] != "END":
         message += conn.recv(buffer_length).decode("utf8")
     conn.sendall(message.encode("utf8"))
+    conn.close()
+    server.close()
