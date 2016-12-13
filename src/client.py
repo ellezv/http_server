@@ -3,6 +3,12 @@
 import socket
 
 
+def main():
+    """CONTROLER."""
+    import sys
+    client(sys.argv[1])
+
+
 def client(message):
     """Connect client to server, send and receive message."""
     message = message + "\r\n"
@@ -18,3 +24,7 @@ def client(message):
     print(response[:-2])
     client_.close()
     return response[:-2]
+
+
+if __name__ == '__main__':  # pragma: no-cover
+    main()
