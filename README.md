@@ -1,9 +1,9 @@
 # HTTP Server
 
 This is an implementation of a socket echo server.  
-In this implementation, we create a server and a client. The client will send a message to the server and the server will echo it back.
+In this implementation, we create a server and a client. The client will send a message to the server will respond back with a header containing 200 ok response code.
 
-It is compatible with both Python 2 and 3.
+Right now unicode is giving us trouble but it will be compatible with python 2 and 3. 
 
 
 ## Coverage:
