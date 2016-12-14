@@ -1,4 +1,5 @@
 """Module to set up the server."""
+# encoding: utf-8
 import socket
 import email.utils
 
@@ -8,7 +9,7 @@ def server():
     server = socket.socket(socket.AF_INET,
                            socket.SOCK_STREAM,
                            socket.IPPROTO_TCP)
-    address = ("127.0.0.1", 5013)
+    address = ("127.0.0.1", 5017)
     server.bind(address)
     server.listen(1)
     buffer_length = 8
