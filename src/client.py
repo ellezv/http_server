@@ -21,8 +21,9 @@ def client(message):
     response = ''
     while response[-12:] != "<CRLF><CRLF>":
         response += client_.recv(buffer_length).decode('utf8')
-    print(response)
+    response = response.replace("<CRLF>", "\r\n")
     client_.close()
+    print(response)
     return response
 
 
