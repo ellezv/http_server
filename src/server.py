@@ -20,7 +20,11 @@ def server():
             while request[-4:] != "\r\n\r\n":
                 request += conn.recv(buffer_length).decode("utf8")
             print(request)
-            conn.sendall(response_ok())
+            try:
+                parse_request(request)
+                conn.sendall(response_ok())
+            except ValueError:
+                conn.sendall(response_error(ValueError.args[0]))
             conn.close()
         except KeyboardInterrupt:
             if conn:
@@ -43,15 +47,26 @@ def response_ok():
     return response.encode("utf8")
 
 
-def response_error():
-    """Set up and return 500 response."""
+def response_error(phrase):
+    """Set up and return an error status code and message."""
     headers = {
         "Content-Type": "text/plain",
         "Date": email.utils.formatdate(usegmt=True),
         "Connection": "close"
     }
-    response = "HTTP/1.1 500 Internal Server Error\r\n"
+    response = "HTTP/1.1 " + phrase + '\r\n'
     for key in headers:
         response += key + ': ' + headers[key] + '\r\n'
     response += '\r\n'
     return response.encode("utf8")
+
+
+def parse_request(request):
+    """Check the request for good stuff."""
+    lst = request.split("\r\n")
+    if lst[0][:3] != "GET":
+        raise ValueError("405 Method Not Allowed: GET only")
+    if "HTTP/1.1" not in lst[0]:
+        raise ValueError("400 Bad Request: HTTP/1.1 only")
+    if "\r\nHost: " not in lst[1]:
+        raise ValueError("400 Bad Request: Host header required")
