@@ -9,7 +9,7 @@ def server():
     server = socket.socket(socket.AF_INET,
                            socket.SOCK_STREAM,
                            socket.IPPROTO_TCP)
-    address = ("127.0.0.1", 5000)
+    address = ("127.0.0.1", 5011)
     server.bind(address)
     server.listen(1)
     buffer_length = 8
@@ -23,8 +23,8 @@ def server():
             try:
                 parse_request(request)
                 conn.sendall(response_ok())
-            except ValueError:
-                conn.sendall(response_error(ValueError.args[0]))
+            except ValueError as e:
+                conn.sendall(response_error(e.args[0]))
             conn.close()
         except KeyboardInterrupt:
             if conn:
@@ -68,5 +68,7 @@ def parse_request(request):
         raise ValueError("405 Method Not Allowed: GET only")
     if "HTTP/1.1" not in lst[0]:
         raise ValueError("400 Bad Request: HTTP/1.1 only")
-    if "\r\nHost: " not in lst[1]:
+    if "Host: " not in lst[1]:
         raise ValueError("400 Bad Request: Host header required")
+    else:
+        return lst[0].split()[1]

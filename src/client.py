@@ -15,7 +15,7 @@ def client(message):
     if sys.version_info[0] == 2:
         message = message.decode("utf8")
     message = message.encode("utf8")
-    info = socket.getaddrinfo('127.0.0.1', 5000)
+    info = socket.getaddrinfo('127.0.0.1', 5011)
     stream_info = [i for i in info if i[1] == socket.SOCK_STREAM][0]
     client_ = socket.socket(*stream_info[:3])
     client_.connect((stream_info[-1]))
