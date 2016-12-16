@@ -45,3 +45,10 @@ def test_response_error_number_of_crlf():
     """Test server response contains the right amount of CRLF."""
     from server import response_ok
     assert response_ok().decode("utf8").count('\r\n') == 5
+
+
+def test_resolve_uri_raises_err():
+    """Test resolve_uri will raise the correct error if file not found."""
+    from server import resolve_uri
+    with pytest.raises(ValueError, message="404 not found"):
+        resolve_uri("badpath")
