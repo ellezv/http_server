@@ -8,7 +8,7 @@ def server():
     server = socket.socket(socket.AF_INET,
                            socket.SOCK_STREAM,
                            socket.IPPROTO_TCP)
-    address = ("127.0.0.1", 5006)
+    address = ("127.0.0.1", 5018)
     server.bind(address)
     server.listen(1)
     buffer_length = 8
@@ -21,6 +21,7 @@ def server():
             try:
                 while request[-8:] != '\\r\\n\\r\\n':
                     request += conn.recv(buffer_length).decode("utf8")
+                print('received')
                 parse_request(request)
                 response = response_ok()
             except ValueError as e:
