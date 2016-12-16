@@ -1,5 +1,4 @@
 """Set up of our client."""
-# encoding: utf-8
 import socket
 import sys
 
@@ -11,11 +10,11 @@ def main():
 
 def client(message):
     """Connect client to server, send and receive message."""
-    message = message + "\r\n\r\n"
+    # message += "\r\n\r\n"
     if sys.version_info[0] == 2:
         message = message.decode("utf8")
     message = message.encode("utf8")
-    info = socket.getaddrinfo('127.0.0.1', 5000)
+    info = socket.getaddrinfo('127.0.0.1', 5006)
     stream_info = [i for i in info if i[1] == socket.SOCK_STREAM][0]
     client_ = socket.socket(*stream_info[:3])
     client_.connect((stream_info[-1]))

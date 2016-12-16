@@ -1,5 +1,4 @@
 """Module to set up the server."""
-# encoding: utf-8
 import socket
 import email.utils
 
@@ -9,7 +8,7 @@ def server():
     server = socket.socket(socket.AF_INET,
                            socket.SOCK_STREAM,
                            socket.IPPROTO_TCP)
-    address = ("127.0.0.1", 5000)
+    address = ("127.0.0.1", 5006)
     server.bind(address)
     server.listen(1)
     buffer_length = 8
@@ -17,18 +16,24 @@ def server():
         try:
             conn, addr = server.accept()
             request = ""
-            while request[-4:] != "\r\n\r\n":
-                request += conn.recv(buffer_length).decode("utf8")
-            print(request)
+            response = ""
+            conn.settimeout(1.5)
             try:
+                while request[-8:] != '\\r\\n\\r\\n':
+                    request += conn.recv(buffer_length).decode("utf8")
                 parse_request(request)
-                conn.sendall(response_ok())
-            except ValueError:
-                conn.sendall(response_error(ValueError.args[0]))
+                response = response_ok()
+            except ValueError as e:
+                response = response_error(e.args[0])
+            except socket.timeout:
+                pass
+            conn.sendall(response.encode("utf8"))
             conn.close()
         except KeyboardInterrupt:
-            if conn:
+            try:
                 conn.close()
+            except:
+                pass
             break
     server.close()
 
@@ -41,10 +46,10 @@ def response_ok():
         "Connection": "close"
     }
     response = "HTTP/1.1 200 OK\r\n"
-    for key in headers:
+    for key in sorted(headers.keys()):
         response += key + ': ' + headers[key] + '\r\n'
     response += '\r\n'
-    return response.encode("utf8")
+    return response
 
 
 def response_error(phrase):
@@ -58,15 +63,39 @@ def response_error(phrase):
     for key in headers:
         response += key + ': ' + headers[key] + '\r\n'
     response += '\r\n'
-    return response.encode("utf8")
+    return response
 
 
 def parse_request(request):
     """Check the request for good stuff."""
-    lst = request.split("\r\n")
-    if lst[0][:3] != "GET":
-        raise ValueError("405 Method Not Allowed: GET only")
-    if "HTTP/1.1" not in lst[0]:
-        raise ValueError("400 Bad Request: HTTP/1.1 only")
-    if "\r\nHost: " not in lst[1]:
-        raise ValueError("400 Bad Request: Host header required")
+    lst = request.split("\\r\\n")
+    try:
+        if lst[0].split()[0] != "GET":
+            raise ValueError("405 Method Not Allowed: GET only")
+        if lst[0].split()[2] != "HTTP/1.1":
+            if "HTTP/1.1" in lst[0]:
+                raise IndexError
+            raise ValueError("400 Bad Request: HTTP/1.1 only")
+        headers = parse_headers(lst[1:-2])
+        if 'Host' not in headers:
+            raise ValueError("400 Bad Request: Host header required")
+        if request[-8:] != '\\r\\n\\r\\n':
+            raise ValueError("400 Bad Request: Missing final carriage returns")
+    except ValueError as e:
+        raise e
+    except IndexError as e:
+        raise ValueError("400 Bad Request: MALFORMED")
+    return lst[0].split()[1]
+
+
+def parse_headers(headers_lst):
+    """Parse headers into a dict."""
+    headers = {}
+    for header in headers_lst:
+        try:
+            key = header[:header.index(':')]
+            value = header[header.index(':'):].strip()
+            headers[key] = value
+        except ValueError:
+            raise IndexError
+    return headers
