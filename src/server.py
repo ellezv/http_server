@@ -1,6 +1,8 @@
 """Module to set up the server."""
 import socket
 import email.utils
+import os
+import mimetypes
 
 
 def server():
@@ -100,3 +102,18 @@ def parse_headers(headers_lst):
         except ValueError:
             raise IndexError
     return headers
+
+def resolve_uri(uri):
+    """Try to return response body."""
+    #build path
+    resources = '/webroot'
+    file_path = os
+
+def print_file():
+    print(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'webroot', 'images'))
+
+
+
+
+
+
