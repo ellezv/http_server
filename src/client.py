@@ -30,5 +30,5 @@ def client(message):
     return response
 
 
-# if __name__ == '__main__':  # pragma: no-cover
-#     main()
+if __name__ == '__main__':  # pragma: no-cover
+    main()
