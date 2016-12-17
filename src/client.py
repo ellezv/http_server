@@ -23,21 +23,28 @@ def client(message):
     client_.sendall(message)
     print('sent')
     buffer_length = 8
-    headers = b""
-    body = b""
-    while '\r\n\r\n' not in headers:
-        try:
-            headers += client_.recv(buffer_length)
-        except:
-            end_headers = headers.index(b'\r\n\r\n') + 4
-            headers = headers[:end_headers].decode('utf8')
-            break
-    headers = parse_headers(headers.split('\r\n')[:-1])
-    while
+    response = b""
+
+    while "\r\n\r\n" not in response:
+        response += client_.recv(buffer_length)
+
+    end_headers = response.index(b'\r\n\r\n') + 4
+    headers = response[:end_headers].decode('utf8')
+    headers = parse_headers(headers.split("\r\n"))
+    try:
+        content_length = headers["Content-Length"]
+    except KeyError:
+        pass
+
+    if content_length:
+        body = response[end_headers:]
+        while content_length <= len(body):
+            body += client_.recv(buffer_length)
+
     client_.close()
     print(response)
     return response
 
 
-# if __name__ == '__main__':  # pragma: no-cover
-#     main()
+if __name__ == '__main__':  # pragma: no-cover
+    main()
