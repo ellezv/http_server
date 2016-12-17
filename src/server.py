@@ -11,7 +11,7 @@ def server():
     server = socket.socket(socket.AF_INET,
                            socket.SOCK_STREAM,
                            socket.IPPROTO_TCP)
-    address = ("127.0.0.1", 5018)
+    address = ("127.0.0.1", 5001)
     server.bind(address)
     server.listen(1)
     buffer_length = 8
@@ -23,10 +23,12 @@ def server():
             conn.settimeout(1.5)
             try:
                 while request[-8:] != '\\r\\n\\r\\n':
+                    print(request)
                     request += conn.recv(buffer_length).decode("utf8")
                 print('received')
-                parse_request(request)
-                response = response_ok()
+                uri = parse_request(request)
+                body, file_type = resolve_uri(uri)
+                response = response_ok(body, file_type)
             except ValueError as e:
                 response = response_error(e.args[0])
             except socket.timeout:
@@ -42,17 +44,17 @@ def server():
     server.close()
 
 
-def response_ok():
+def response_ok(body, file_type):
     """Set up and return 200 response."""
     headers = {
-        "Content-Type": "text/plain",
+        "Content-Type": file_type,
         "Date": email.utils.formatdate(usegmt=True),
         "Connection": "close"
     }
     response = "HTTP/1.1 200 OK\r\n"
     for key in sorted(headers.keys()):
         response += key + ': ' + headers[key] + '\r\n'
-    response += '\r\n'
+    response += '\r\n' + body + 'EOF'
     return response
 
 
@@ -66,7 +68,7 @@ def response_error(phrase):
     response = "HTTP/1.1 " + phrase + '\r\n'
     for key in headers:
         response += key + ': ' + headers[key] + '\r\n'
-    response += '\r\n'
+    response += 'EOF'
     return response
 
 
@@ -119,8 +121,8 @@ def resolve_uri(uri):
             body = html.format(f.read())
             f.close()
         return body, mimetypes.guess_type(uri)[0]
-    except os.errno.ENOENT as e:
-        raise e
+    except Exception:
+        raise ValueError("404 File Not Found")
 
 
 

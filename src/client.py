@@ -15,7 +15,7 @@ def client(message):
         message = message.decode("utf8")
     message = message.encode("utf8")
     print(message)
-    info = socket.getaddrinfo('127.0.0.1', 5018)
+    info = socket.getaddrinfo('127.0.0.1', 5001)
     stream_info = [i for i in info if i[1] == socket.SOCK_STREAM][0]
     client_ = socket.socket(*stream_info[:3])
     client_.connect((stream_info[-1]))
@@ -23,12 +23,12 @@ def client(message):
     print('sent')
     buffer_length = 8
     response = ''
-    while response[-4:] != "\r\n\r\n":
+    while response[-3:] != "EOF":
         response += client_.recv(buffer_length).decode('utf8')
     client_.close()
     print(response)
     return response
 
 
-if __name__ == '__main__':  # pragma: no-cover
-    main()
+# if __name__ == '__main__':  # pragma: no-cover
+#     main()
