@@ -11,29 +11,29 @@ def server():
     server = socket.socket(socket.AF_INET,
                            socket.SOCK_STREAM,
                            socket.IPPROTO_TCP)
-    address = ("127.0.0.1", 5000)
+    address = ("127.0.0.1", 5006)
     server.bind(address)
     server.listen(1)
     buffer_length = 8
     while True:
         try:
             conn, addr = server.accept()
-            request = ""
-            response = ""
+            request = b""
+            response = b""
             conn.settimeout(1.5)
             try:
-                while request[-8:] != '\\r\\n\\r\\n':
+                while request[-4:] != b'\r\n\r\n':
                     print(request)
-                    request += conn.recv(buffer_length).decode("utf8")
+                    request += conn.recv(buffer_length)
                 print('received')
                 uri = parse_request(request)
-                body, file_type = resolve_uri(uri)
+                body, file_type = resolve_uri(uri.decode("utf8"))
                 response = response_ok(file_type, body)
             except ValueError as e:
                 response = response_error(e.args[0])
             except socket.timeout:
                 pass
-            conn.sendall(response)
+            conn.sendall(response.encode("utf8"))
             conn.close()
         except KeyboardInterrupt:
             try:
@@ -54,10 +54,11 @@ def response_ok(file_type, body):
     if file_type:
         headers["Content-Type"] = file_type
     response = "HTTP/1.1 200 OK\r\n"
-    for key in sorted(headers.keys()):
+    for key in headers.keys():
         response += key + ': ' + headers[key] + '\r\n'
-    response += '\r\n'
-    return response.encode('utf8')
+    response += '\r\n' + body
+    print(response)
+    return response
 
 
 def response_error(phrase):
@@ -71,23 +72,23 @@ def response_error(phrase):
     for key in headers:
         response += key + ': ' + headers[key] + '\r\n'
     response += '\r\n'
-    return response.encode('utf8')
+    return response
 
 
 def parse_request(request):
     """Check the request for good stuff."""
-    lst = request.split("\\r\\n")
+    lst = request.split(b"\r\n")
     try:
-        if lst[0].split()[0] != "GET":
+        if lst[0].split()[0] != b"GET":
             raise ValueError("405 Method Not Allowed: GET only")
-        if lst[0].split()[2] != "HTTP/1.1":
-            if "HTTP/1.1" in lst[0]:
+        if lst[0].split()[2] != b"HTTP/1.1":
+            if b"HTTP/1.1" in lst[0]:
                 raise IndexError
             raise ValueError("400 Bad Request: HTTP/1.1 only")
         headers = parse_headers(lst[1:-2])
-        if 'Host' not in headers:
+        if b'Host' not in headers:
             raise ValueError("400 Bad Request: Host header required")
-        if request[-8:] != '\\r\\n\\r\\n':
+        if request[-4:] != b'\r\n\r\n':
             raise ValueError("400 Bad Request: Missing final carriage returns")
     except ValueError as e:
         raise e
@@ -101,8 +102,10 @@ def parse_headers(headers_lst):
     headers = {}
     for header in headers_lst:
         try:
-            key = header[:header.index(':')]
-            value = header[header.index(':'):].strip()
+            print(header)
+            key = header[:header.index(b':')]
+            value = header[header.index(b':') + 2:].strip()
+            print('value', value)
             headers[key] = value
         except ValueError:
             raise IndexError
@@ -130,6 +133,9 @@ def resolve_uri(uri):
     except Exception:
         raise ValueError("404 File Not Found")
 
+
+if __name__ == '__main__':
+    server()
 
 
 

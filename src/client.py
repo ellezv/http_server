@@ -16,7 +16,7 @@ def client(message):
         message = message.decode("utf8")
     message = message.encode("utf8")
     print(message)
-    info = socket.getaddrinfo('127.0.0.1', 5000)
+    info = socket.getaddrinfo('127.0.0.1', 5006)
     stream_info = [i for i in info if i[1] == socket.SOCK_STREAM][0]
     client_ = socket.socket(*stream_info[:3])
     client_.connect((stream_info[-1]))
@@ -25,26 +25,29 @@ def client(message):
     buffer_length = 8
     response = b""
 
-    while "\r\n\r\n" not in response:
+    while b"\r\n\r\n" not in response:
         response += client_.recv(buffer_length)
 
     end_headers = response.index(b'\r\n\r\n') + 4
     headers = response[:end_headers].decode('utf8')
-    headers = parse_headers(headers.split("\r\n"))
+    print(headers.split("\r\n")[:-2])
+    headers = parse_headers(headers.split("\r\n")[1:-2])
     try:
-        content_length = headers["Content-Length"]
+        print(headers["Content-Length"])
+        content_length = int(headers["Content-Length"])
     except KeyError:
         pass
-
-    if content_length:
+    else:
         body = response[end_headers:]
         while content_length <= len(body):
+            print(body)
             body += client_.recv(buffer_length)
+        response += body
 
     client_.close()
     print(response)
     return response
 
 
-if __name__ == '__main__':  # pragma: no-cover
-    main()
+# if __name__ == '__main__':  # pragma: no-cover
+#     main()
