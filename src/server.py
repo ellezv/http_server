@@ -3,6 +3,7 @@ import socket
 import email.utils
 import os
 import mimetypes
+import io
 
 
 def server():
@@ -103,14 +104,31 @@ def parse_headers(headers_lst):
             raise IndexError
     return headers
 
+
 def resolve_uri(uri):
     """Try to return response body."""
-    #build path
-    resources = '/webroot'
-    file_path = os
+    path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                        'webroot',
+                        uri)
+    html = "<html><body>{}</body></html>"
+    try:
+        if os.path.isdir(path):
+            body = html.format('<a href=' + uri + '></a>')
+        elif os.path.isfile(path):
+            f = io.open(path, encoding='utf-8')
+            body = html.format(f.read())
+            f.close()
+        return body, mimetypes.guess_type(uri)[0]
+    except os.errno.ENOENT as e:
+        raise e
 
-def print_file():
-    print(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'webroot', 'images'))
+
+
+
+
+
+
+
 
 
 
