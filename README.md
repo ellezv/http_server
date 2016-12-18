@@ -1,9 +1,28 @@
 # HTTP Server
 
-This is an implementation of a socket echo server.  
-In this implementation, we create a server and a client. The client will send a message to the server will respond back with a header containing 200 ok response code.
+This is an implementation of a socket server.  
+In this implementation, we create a server and a client.
+If the client request a file contained in the root, the server will serve it.
+If the client doesn't request properly, the server will respond appropriately.
 
-Right now unicode is giving us trouble but it will be compatible with python 2 and 3. 
+We also implemented a concurrency module using Gevent that will allow us to handle multiple requests.
+
+
+## Contains:
+    - Modules:
+        - *client.py*
+        - *server.py*
+        - *concurrency.py*
+    - Tests:
+        - *test_unit.py*
+        - *test_functional.py*
+        - *test_concurrency.py*
+
+## Use:
+We have been having trouble with entry points.
+Currently you can clone this repo and type `python3 server <port>` to run the server.
+You can then open your browser localhost and request files from the webroot.
+Alternatively you can open the client in another terminal and type `python3 client <request>`, request being a valid HTTP GET request.
 
 
 ## Coverage:
