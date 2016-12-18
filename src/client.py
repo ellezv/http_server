@@ -3,9 +3,9 @@ import socket
 import sys
 
 
-def main():
+def main(request):
     """CONTROLER."""
-    client(sys.argv[1])
+    client(request)
 
 
 def client(message):
@@ -14,8 +14,7 @@ def client(message):
     if sys.version_info[0] == 2:
         message = message.decode("utf8")
     message = message.encode("utf8")
-    print(message)
-    info = socket.getaddrinfo('127.0.0.1', 5010)
+    info = socket.getaddrinfo('127.0.0.1', 5011)
     stream_info = [i for i in info if i[1] == socket.SOCK_STREAM][0]
     client_ = socket.socket(*stream_info[:3])
     client_.connect((stream_info[-1]))
@@ -29,13 +28,10 @@ def client(message):
 
     end_headers = response.index(b'\r\n\r\n') + 4
     headers = response[:end_headers].decode('utf8')
-    print(headers.split("\r\n")[:-2])
     headers = parse_headers(headers.split("\r\n")[1:-2])
     try:
-        print(headers["Content-Length"])
         content_length = int(headers["Content-Length"])
     except KeyError:
-        print('keyerror')
         pass
     else:
         body = response[end_headers:]
@@ -59,5 +55,5 @@ def parse_headers(headers_lst):
             raise IndexError
     return headers
 
-# if __name__ == '__main__':  # pragma: no-cover
-#     main()
+if __name__ == '__main__':  # pragma: no-cover
+    main(sys.argv[1])

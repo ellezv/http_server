@@ -3,7 +3,6 @@ import socket
 import email.utils
 import os
 import mimetypes
-import io
 
 
 def server():
@@ -11,7 +10,7 @@ def server():
     server = socket.socket(socket.AF_INET,
                            socket.SOCK_STREAM,
                            socket.IPPROTO_TCP)
-    address = ("127.0.0.1", 5010)
+    address = ("127.0.0.1", 5011)
     server.bind(address)
     server.listen(1)
     buffer_length = 8
@@ -23,7 +22,6 @@ def server():
             conn.settimeout(1.5)
             try:
                 while request[-4:] != b'\r\n\r\n':
-                    print(request)
                     request += conn.recv(buffer_length)
                 print('received')
                 uri = parse_request(request)
@@ -32,7 +30,7 @@ def server():
             except ValueError as e:
                 response = response_error(e.args[0])
             except socket.timeout:
-                pass
+                response = response_error("400 Bad Request: Timed out.")
             conn.sendall(response.encode("utf8"))
             conn.close()
         except KeyboardInterrupt:
@@ -64,7 +62,6 @@ def response_ok(file_type, body):
 def response_error(phrase):
     """Set up and return an error status code and message."""
     headers = {
-        "Content-Type": "text/plain",
         "Date": email.utils.formatdate(usegmt=True),
         "Connection": "close"
     }
@@ -136,13 +133,3 @@ def resolve_uri(uri):
 
 if __name__ == '__main__':
     server()
-
-
-
-
-
-
-
-
-
-
