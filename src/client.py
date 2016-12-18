@@ -1,6 +1,7 @@
 """Set up of our client."""
 import socket
 import sys
+import codecs
 
 
 def main(request):
@@ -13,8 +14,9 @@ def client(message):
     # message += "\r\n\r\n"
     if sys.version_info[0] == 2:
         message = message.decode("utf8")
-    message = message.encode("utf8")
-    info = socket.getaddrinfo('127.0.0.1', 5011)
+    message = codecs.escape_decode(message)[0]
+    print(message)
+    info = socket.getaddrinfo('127.0.0.1', 5000)
     stream_info = [i for i in info if i[1] == socket.SOCK_STREAM][0]
     client_ = socket.socket(*stream_info[:3])
     client_.connect((stream_info[-1]))
@@ -28,18 +30,18 @@ def client(message):
 
     end_headers = response.index(b'\r\n\r\n') + 4
     headers = response[:end_headers].decode('utf8')
-    headers = parse_headers(headers.split("\r\n")[1:-2])
+    headers_dict = parse_headers(headers.split("\r\n")[1:-2])
     try:
-        content_length = int(headers["Content-Length"])
+        content_length = int(headers_dict["Content-Length"])
     except KeyError:
         pass
     else:
         body = response[end_headers:]
         while content_length > len(body):
             body += client_.recv(buffer_length)
-        response += body
+        response = headers.encode("utf8") + body
     client_.close()
-    print(response.decode('utf8'))
+    print(response)
     return response
 
 

@@ -10,7 +10,7 @@ def server():
     server = socket.socket(socket.AF_INET,
                            socket.SOCK_STREAM,
                            socket.IPPROTO_TCP)
-    address = ("127.0.0.1", 5011)
+    address = ("127.0.0.1", 5000)
     server.bind(address)
     server.listen(1)
     buffer_length = 8
@@ -31,7 +31,7 @@ def server():
                 response = response_error(e.args[0])
             except socket.timeout:
                 response = response_error("400 Bad Request: Timed out.")
-            conn.sendall(response.encode("utf8"))
+            conn.sendall(response)
             conn.close()
         except KeyboardInterrupt:
             try:
@@ -54,8 +54,12 @@ def response_ok(file_type, body):
     response = "HTTP/1.1 200 OK\r\n"
     for key in headers.keys():
         response += key + ': ' + headers[key] + '\r\n'
-    response += '\r\n' + body
-    print(response)
+    response += '\r\n'
+    if file_type and file_type[:5] == 'image' and file_type[6:] != 'x-icon':
+        response = b''.join([response.encode('utf8'), body])
+    else:
+        response += body
+        response = response.encode('utf8')
     return response
 
 
@@ -69,7 +73,7 @@ def response_error(phrase):
     for key in headers:
         response += key + ': ' + headers[key] + '\r\n'
     response += '\r\n'
-    return response
+    return response.encode('utf8')
 
 
 def parse_request(request):
@@ -99,10 +103,8 @@ def parse_headers(headers_lst):
     headers = {}
     for header in headers_lst:
         try:
-            print(header)
             key = header[:header.index(b':')]
             value = header[header.index(b':') + 2:].strip()
-            print('value', value)
             headers[key] = value
         except ValueError:
             raise IndexError
@@ -111,24 +113,32 @@ def parse_headers(headers_lst):
 
 def resolve_uri(uri):
     """Try to return response body."""
-    print(__file__)
     path = '/'.join([os.path.dirname(os.path.realpath(__file__)),
                      'webroot',
                      uri])
-    print(path)
-    html = "<html><body>{}</body></html>"
     body = ""
     try:
         if os.path.isdir(path):
-            body = html.format('<a href="' + uri + '"></a>')
+            body = directory_listing(path)
         elif os.path.isfile(path):
             ftype = mimetypes.guess_type(uri)[0]
-            r = 'rb' if ftype[:5] == 'image' else 'r'
+            r = 'r'
+            if ftype[:5] == 'image':
+                r = 'rb'
+                body = b''
             with open(path, r) as f:
-                body = html.format(f.read())
+                body = f.read()
         return body, mimetypes.guess_type(uri)[0]
     except Exception:
         raise ValueError("404 File Not Found")
+
+
+def directory_listing(path):
+    """Create directory listing."""
+    res = ''
+    for f in os.listdir(path):
+        res += '<a style="display:block" href="' + '/'.join([path.split('/')[-1], f]) + '">' + f + '</a>\r\n'
+    return "<html><body>{}</body></html>".format(res)
 
 
 if __name__ == '__main__':
