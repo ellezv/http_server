@@ -51,6 +51,7 @@ def parse_headers(headers_lst):
             raise IndexError
     return headers
 
+
 if __name__ == '__main__':  # pragma: no-cover
     try:
         client(sys.argv[1], sys.argv[2])

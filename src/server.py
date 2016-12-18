@@ -15,6 +15,7 @@ def server(port=5000):
     server.bind(address)
     server.listen(1)
     buffer_length = 8
+    print("Server running on port " + str(port))
     while True:
         try:
             conn, addr = server.accept()

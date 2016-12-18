@@ -19,7 +19,7 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'client = client:main',
+            'client = client:client',
             'server = server:server'
         ]
     }
