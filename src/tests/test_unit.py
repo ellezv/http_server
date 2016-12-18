@@ -30,6 +30,15 @@ ERRORS = [
 ]
 
 
+OK_PARAMS = [
+    ["text/css", "abcdnonoyes"],
+    ["text/x-python", "abcdnonoyes"],
+    ["image/jpeg", b"abcdnonoyes"],
+    ["image/png", b"abcdnonoyes"],
+    ["image/x-icon", "abcdnonoyes"],
+]
+
+
 def test_parse_headers_ok():
     """Test headers for request."""
     from server import parse_headers
@@ -45,16 +54,18 @@ def test_parse_headers_error():
         parse_headers([b'something'])
 
 
-def test_response_ok_number_of_crlf():
+@pytest.mark.parametrize("ftype, body", OK_PARAMS)
+def test_response_ok_number_of_crlf(ftype, body):
     """Test server response contains the right amount of CRLF."""
     from server import response_ok
-    assert response_ok("text/plain", "").count(b'\r\n') == 6
+    assert response_ok(ftype, body).count(b'\r\n') == 6
 
 
-def test_response_ok_content_length():
+@pytest.mark.parametrize("ftype, body", OK_PARAMS)
+def test_response_ok_content_length(ftype, body):
     """Test content-length header."""
     from server import response_ok, parse_headers
-    headers = response_ok('text/plain', "12345678910").split(b'\r\n\r\n')[0]
+    headers = response_ok(ftype, body).split(b'\r\n\r\n')[0]
     assert parse_headers(headers.split(b'\r\n')[1:])[b"Content-Length"] == b'11'
 
 
@@ -93,14 +104,3 @@ def test_resolve_uri_find_type(file_path, file_type):
     from server import resolve_uri
     assert resolve_uri(file_path)[1] == file_type
 
-
-def test_directory_listing():
-    from server import directory_listing
-    body = b'<html><body><a style="display:block;margin:10px" href="/">&#128194; root</a><a style="display:block;margin:10px" href="images/index.html">index.html</a><a style="display:block;margin:10px" href="images/JPEG_example.jpg">JPEG_example.jpg</a><a style="display:block;margin:10px" href="images/Mao">Mao&#128194;</a><a style="display:block;margin:10px" href="images/PREVIEW.jpg">PREVIEW.jpg</a><a style="display:block;margin:10px" href="images/sample_1.png">sample_1.png</a><a style="display:block;margin:10px" href="images/Sample_Scene_Balls.jpg">Sample_Scene_Balls.jpg</a><a style="display:block;margin:10px" href="images/style.css">style.css</a><a style="display:block;margin:10px" href="images/van-pic.png">van-pic.png</a></body></html>'
-    assert directory_listing('/images'.encode("utf8")) == body
-
-
-def test_directory_listing_2():
-    from server import directory_listing
-    body = '<html><body><a style="display:block;margin:10px" href="/.DocumentRevisions-V100">.DocumentRevisions-V100&#128194;</a><a style="display:block;margin:10px" href="/.DS_Store">.DS_Store</a><a style="display:block;margin:10px" href="/.file">.file</a><a style="display:block;margin:10px" href="/.fseventsd">.fseventsd&#128194;</a><a style="display:block;margin:10px" href="/.PKInstallSandboxManager-SystemSoftware">.PKInstallSandboxManager-SystemSoftware&#128194;</a><a style="display:block;margin:10px" href="/.Spotlight-V100">.Spotlight-V100&#128194;</a><a style="display:block;margin:10px" href="/.Trashes">.Trashes&#128194;</a><a style="display:block;margin:10px" href="/.vol">.vol&#128194;</a><a style="display:block;margin:10px" href="/Applications">Applications&#128194;</a><a style="display:block;margin:10px" href="/bin">bin&#128194;</a><a style="display:block;margin:10px" href="/cores">cores&#128194;</a><a style="display:block;margin:10px" href="/dev">dev&#128194;</a><a style="display:block;margin:10px" href="/etc">etc&#128194;</a><a style="display:block;margin:10px" href="/home">home&#128194;</a><a style="display:block;margin:10px" href="/installer.failurerequests">installer.failurerequests</a><a style="display:block;margin:10px" href="/Library">Library&#128194;</a><a style="display:block;margin:10px" href="/net">net&#128194;</a><a style="display:block;margin:10px" href="/Network">Network&#128194;</a><a style="display:block;margin:10px" href="/private">private&#128194;</a><a style="display:block;margin:10px" href="/sbin">sbin&#128194;</a><a style="display:block;margin:10px" href="/System">System&#128194;</a><a style="display:block;margin:10px" href="/tmp">tmp&#128194;</a><a style="display:block;margin:10px" href="/Users">Users&#128194;</a><a style="display:block;margin:10px" href="/usr">usr&#128194;</a><a style="display:block;margin:10px" href="/var">var&#128194;</a><a style="display:block;margin:10px" href="/Volumes">Volumes&#128194;</a></body></html>'
-    assert directory_listing('/'.encode("utf8")) == body
