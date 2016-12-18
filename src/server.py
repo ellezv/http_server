@@ -3,14 +3,15 @@ import socket
 import email.utils
 import os
 import mimetypes
+import sys
 
 
-def server():
+def server(port=5000):
     """Start server to receive message and echo back."""
     server = socket.socket(socket.AF_INET,
                            socket.SOCK_STREAM,
                            socket.IPPROTO_TCP)
-    address = ("127.0.0.1", 5000)
+    address = ("127.0.0.1", port)
     server.bind(address)
     server.listen(1)
     buffer_length = 8
@@ -23,7 +24,6 @@ def server():
             try:
                 while request[-4:] != b'\r\n\r\n':
                     request += conn.recv(buffer_length)
-                print('received')
                 uri = parse_request(request)
                 body, file_type = resolve_uri(uri.decode("utf8"))
                 response = response_ok(file_type, body)
@@ -80,6 +80,7 @@ def parse_request(request):
     """Check the request for good stuff."""
     lst = request.split(b"\r\n")
     try:
+        print(lst[0].decode('utf8'))
         if lst[0].split()[0] != b"GET":
             raise ValueError("405 Method Not Allowed: GET only")
         if lst[0].split()[2] != b"HTTP/1.1":
@@ -115,7 +116,7 @@ def resolve_uri(uri):
     """Try to return response body."""
     path = '/'.join([os.path.dirname(os.path.realpath(__file__)),
                      'webroot',
-                     uri])
+                     uri]).replace('//', '/')
     body = ""
     try:
         if os.path.isdir(path):
@@ -137,11 +138,26 @@ def resolve_uri(uri):
 
 def directory_listing(path):
     """Create directory listing."""
-    res = ''
+    listing = ''
+    atag = '<a style="display:block;margin:10px" href="{}">{}</a>'
+    rel_path = path.split('webroot')[-1]
+    if rel_path != '/':
+        prev_dir = rel_path.split('/')[-2]
+        if prev_dir:
+            listing += atag.format('/'.join(rel_path.split('/')[:-1]),
+                                   '&#128194; ' + rel_path.split('/')[-2])
+        else:
+            listing += atag.format('/', '&#128194; root')
     for f in os.listdir(path):
-        res += '<a style="display:block" href="' + '/'.join([path.split('/')[-1], f]) + '">' + f + '</a>\r\n'
-    return "<html><body>{}</body></html>".format(res)
+        fname = f
+        if os.path.isdir('/'.join([path, f])):
+            fname = f + '&#128194;'
+        listing += atag.format('/'.join([rel_path.split('/')[-1], f]), fname)
+    return "<html><body>{}</body></html>".format(listing)
 
 
 if __name__ == '__main__':
-    server()
+    try:
+        server(int(sys.argv[1]))
+    except IndexError:
+        server()

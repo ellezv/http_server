@@ -4,23 +4,18 @@ import sys
 import codecs
 
 
-def main(request):
-    """CONTROLER."""
-    client(request)
-
-
-def client(message):
+def client(request, port=5000):
     """Connect client to server, send and receive message."""
     # message += "\r\n\r\n"
     if sys.version_info[0] == 2:
-        message = message.decode("utf8")
-    message = codecs.escape_decode(message)[0]
-    print(message)
-    info = socket.getaddrinfo('127.0.0.1', 5000)
+        request = request.decode("utf8")
+    request = codecs.escape_decode(request)[0]
+    print(request)
+    info = socket.getaddrinfo('127.0.0.1', port)
     stream_info = [i for i in info if i[1] == socket.SOCK_STREAM][0]
     client_ = socket.socket(*stream_info[:3])
     client_.connect((stream_info[-1]))
-    client_.sendall(message)
+    client_.sendall(request)
     print('sent')
     buffer_length = 8
     response = b""
@@ -58,4 +53,7 @@ def parse_headers(headers_lst):
     return headers
 
 if __name__ == '__main__':  # pragma: no-cover
-    main(sys.argv[1])
+    try:
+        client(sys.argv[1], sys.argv[2])
+    except IndexError:
+        client(sys.argv[1])
