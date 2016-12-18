@@ -104,3 +104,13 @@ def test_resolve_uri_find_type(file_path, file_type):
     from server import resolve_uri
     assert resolve_uri(file_path)[1] == file_type
 
+
+def test_directory_listing():
+    from server import directory_listing
+    body = '<html><body><a style="display:block;margin:10px" href="/.DocumentRevisions-V100">.DocumentRevisions-V100&#128194;</a><a style="display:block;margin:10px" href="/.DS_Store">.DS_Store</a><a style="display:block;margin:10px" href="/.file">.file</a><a style="display:block;margin:10px" href="/.fseventsd">.fseventsd&#128194;</a><a style="display:block;margin:10px" href="/.PKInstallSandboxManager-SystemSoftware">.PKInstallSandboxManager-SystemSoftware&#128194;</a><a style="display:block;margin:10px" href="/.Spotlight-V100">.Spotlight-V100&#128194;</a><a style="display:block;margin:10px" href="/.Trashes">.Trashes&#128194;</a><a style="display:block;margin:10px" href="/.vol">.vol&#128194;</a><a style="display:block;margin:10px" href="/Applications">Applications&#128194;</a><a style="display:block;margin:10px" href="/bin">bin&#128194;</a><a style="display:block;margin:10px" href="/cores">cores&#128194;</a><a style="display:block;margin:10px" href="/dev">dev&#128194;</a><a style="display:block;margin:10px" href="/etc">etc&#128194;</a><a style="display:block;margin:10px" href="/home">home&#128194;</a><a style="display:block;margin:10px" href="/installer.failurerequests">installer.failurerequests</a><a style="display:block;margin:10px" href="/Library">Library&#128194;</a><a style="display:block;margin:10px" href="/net">net&#128194;</a><a style="display:block;margin:10px" href="/Network">Network&#128194;</a><a style="display:block;margin:10px" href="/private">private&#128194;</a><a style="display:block;margin:10px" href="/sbin">sbin&#128194;</a><a style="display:block;margin:10px" href="/System">System&#128194;</a><a style="display:block;margin:10px" href="/tmp">tmp&#128194;</a><a style="display:block;margin:10px" href="/Users">Users&#128194;</a><a style="display:block;margin:10px" href="/usr">usr&#128194;</a><a style="display:block;margin:10px" href="/var">var&#128194;</a><a style="display:block;margin:10px" href="/Volumes">Volumes&#128194;</a></body></html>'
+    assert directory_listing("/") == body
+
+def test_directory_list_raise_err():
+    from server import directory_listing
+    with pytest.raises(OSError):
+        directory_listing("/directory")
