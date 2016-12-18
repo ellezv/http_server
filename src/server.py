@@ -11,7 +11,7 @@ def server():
     server = socket.socket(socket.AF_INET,
                            socket.SOCK_STREAM,
                            socket.IPPROTO_TCP)
-    address = ("127.0.0.1", 5006)
+    address = ("127.0.0.1", 5010)
     server.bind(address)
     server.listen(1)
     buffer_length = 8

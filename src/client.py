@@ -1,7 +1,6 @@
 """Set up of our client."""
 import socket
 import sys
-from server import parse_headers
 
 
 def main():
@@ -16,7 +15,7 @@ def client(message):
         message = message.decode("utf8")
     message = message.encode("utf8")
     print(message)
-    info = socket.getaddrinfo('127.0.0.1', 5006)
+    info = socket.getaddrinfo('127.0.0.1', 5010)
     stream_info = [i for i in info if i[1] == socket.SOCK_STREAM][0]
     client_ = socket.socket(*stream_info[:3])
     client_.connect((stream_info[-1]))
@@ -36,18 +35,29 @@ def client(message):
         print(headers["Content-Length"])
         content_length = int(headers["Content-Length"])
     except KeyError:
+        print('keyerror')
         pass
     else:
         body = response[end_headers:]
-        while content_length <= len(body):
-            print(body)
+        while content_length > len(body):
             body += client_.recv(buffer_length)
         response += body
-
     client_.close()
-    print(response)
+    print(response.decode('utf8'))
     return response
 
+
+def parse_headers(headers_lst):
+    """Parse headers into a dict."""
+    headers = {}
+    for header in headers_lst:
+        try:
+            key = header[:header.index(':')]
+            value = header[header.index(':') + 2:].strip()
+            headers[key] = value
+        except ValueError:
+            raise IndexError
+    return headers
 
 # if __name__ == '__main__':  # pragma: no-cover
 #     main()
