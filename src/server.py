@@ -14,26 +14,11 @@ def server(port=5000):
     address = ("127.0.0.1", port)
     server.bind(address)
     server.listen(1)
-    buffer_length = 8
     print("Server running on port " + str(port))
     while True:
         try:
             conn, addr = server.accept()
-            request = b""
-            response = b""
-            conn.settimeout(5)
-            try:
-                while request[-4:] != b'\r\n\r\n':
-                    request += conn.recv(buffer_length)
-                uri = parse_request(request)
-                body, file_type = resolve_uri(uri.decode("utf8"))
-                response = response_ok(file_type, body)
-            except ValueError as e:
-                response = response_error(e.args[0])
-            except socket.timeout:
-                response = response_error("400 Bad Request: Timed out.")
-            conn.sendall(response)
-            conn.close()
+            handle_connection(conn)
         except KeyboardInterrupt:
             try:
                 conn.close()
@@ -41,6 +26,26 @@ def server(port=5000):
                 pass
             break
     server.close()
+
+
+def handle_connection(conn):
+    """Handle communication with client."""
+    request = b""
+    response = b""
+    buffer_length = 8
+    conn.settimeout(5)
+    try:
+        while request[-4:] != b'\r\n\r\n':
+            request += conn.recv(buffer_length)
+        uri = parse_request(request)
+        body, file_type = resolve_uri(uri.decode("utf8"))
+        response = response_ok(file_type, body)
+    except ValueError as e:
+        response = response_error(e.args[0])
+    except socket.timeout:
+        response = response_error("400 Bad Request: Timed out.")
+    conn.sendall(response)
+    conn.close()
 
 
 def response_ok(file_type, body):
