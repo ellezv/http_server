@@ -6,7 +6,6 @@ import codecs
 
 def client(request, port=5000):
     """Connect client to server, send and receive message."""
-    # message += "\r\n\r\n"
     if sys.version_info[0] == 2:
         request = request.decode("utf8")
     request = codecs.escape_decode(request)[0]

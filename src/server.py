@@ -20,7 +20,7 @@ def server(port=5000):
             conn, addr = server.accept()
             request = b""
             response = b""
-            conn.settimeout(1.5)
+            conn.settimeout(5)
             try:
                 while request[-4:] != b'\r\n\r\n':
                     request += conn.recv(buffer_length)
@@ -72,7 +72,7 @@ def response_error(phrase):
     response = "HTTP/1.1 " + phrase + '\r\n'
     for key in headers:
         response += key + ': ' + headers[key] + '\r\n'
-    response += '\r\n'
+    response += '\r\n' + build_error(phrase)
     return response.encode('utf8')
 
 
@@ -134,6 +134,24 @@ def resolve_uri(uri):
         return body, mimetypes.guess_type(uri)[0]
     except Exception:
         raise ValueError("404 File Not Found")
+
+
+def build_error(phrase):
+    """Build error body."""
+    blank = """
+    <!DOCTYPE html>
+    <html>
+        <body>
+            <h2 style="color:pink">ERROR {code}</h2>
+            <h4>{reason}</h4>
+            <h5>{l}
+        </body>
+    </html>
+    """
+    code = phrase[:3]
+    reason = phrase.split(':')[0][4:]
+    long_reason = phrase.split(':')[1] if ':' in phrase else ''
+    return blank.format(code=code, reason=reason, l=long_reason)
 
 
 def directory_listing(path):
