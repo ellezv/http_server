@@ -30,6 +30,15 @@ ERRORS = [
 ]
 
 
+OK_PARAMS = [
+    ["text/css", "abcdnonoyes"],
+    ["text/x-python", "abcdnonoyes"],
+    ["image/jpeg", b"abcdnonoyes"],
+    ["image/png", b"abcdnonoyes"],
+    ["image/x-icon", "abcdnonoyes"],
+]
+
+
 def test_parse_headers_ok():
     """Test headers for request."""
     from server import parse_headers
@@ -38,16 +47,18 @@ def test_parse_headers_ok():
     assert b"Host" in header_dict and b"Date" in header_dict
 
 
-def test_response_ok_number_of_crlf():
+@pytest.mark.parametrize("ftype, body", OK_PARAMS)
+def test_response_ok_number_of_crlf(ftype, body):
     """Test server response contains the right amount of CRLF."""
     from server import response_ok
-    assert response_ok("text/plain", "").count(b'\r\n') == 6
+    assert response_ok(ftype, body).count(b'\r\n') == 6
 
 
-def test_response_ok_content_length():
+@pytest.mark.parametrize("ftype, body", OK_PARAMS)
+def test_response_ok_content_length(ftype, body):
     """Test content-length header."""
     from server import response_ok, parse_headers
-    headers = response_ok('text/plain', "12345678910").split(b'\r\n\r\n')[0]
+    headers = response_ok(ftype, body).split(b'\r\n\r\n')[0]
     assert parse_headers(headers.split(b'\r\n')[1:])[b"Content-Length"] == b'11'
 
 

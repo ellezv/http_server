@@ -2,21 +2,22 @@
 import pytest
 
 
+BAD_REQUEST = b'400 Bad Request: '
+BAD_VERSION = b'505 HTTP Version Not Supported: '
+BAD_METHOD = b'405 Method Not Allowed: '
+
+
 BAD_GET_REQUESTS = [
-    ["GET uri HTTP/1.1\r\nHost: me", b"Missing final carriage returns"],
-    ["GET uri HTTP/1.1\r\nDate: tomorrow\r\n\r\n", b"Host header required"],
-    ["GET uri HTTP/1.0\r\nHost: \r\n\r\n", b"HTTP/1.1 only"],
+    ["GET uri HTTP/1.1\r\nHost: me", BAD_REQUEST, b"Timed out."],
+    ["GET uri HTTP/1.1\r\nDate: tomorrow\r\n\r\n", BAD_REQUEST, b"Host header required"],
+    ["GET uri HTTP/1.0\r\nHost: \r\n\r\n", BAD_VERSION, b"HTTP/1.1 only"],
+    ["GET HTTP/1.1\r\nHost: me\r\n\r\n", BAD_REQUEST, b"MALFORMED"],
+    ["GET uri HTTP/1.1\r\nHost: \r\n\r\n\r\n", BAD_REQUEST, b"MALFORMED"],
+    ["GET uri HTTP/1.1\r\n\r\nHost: me\r\n\r\n", BAD_REQUEST, b"MALFORMED"],
+    ["POST uri HTTP/1.1\r\nHost: me\r\n\r\n", BAD_METHOD, b"GET only"],
+    ["PUT uri HTTP/1.1\r\nHost: me\r\n\r\n", BAD_METHOD, b"GET only"],
+    ["get uri HTTP/1.1\r\nHost: me\r\n\r\n", BAD_METHOD, b"GET only"],
 ]
-
-
-MALFORMED = [
-    "GET HTTP/1.1\r\nHost: me\r\n\r\n",
-    "GET uri HTTP/1.1\r\nHost: \r\n\r\n\r\n",
-    "GET uri HTTP/1.1\r\n\r\nHost: me\r\n\r\n",
-]
-
-
-PROTO = 'HTTP/1.1'
 
 
 def test_timeout():
@@ -25,25 +26,11 @@ def test_timeout():
     assert b"Timed out" in client("GET HTTP PLEASE").split(b'\r\n')[0]
 
 
-def test_client_wrong_method():
-    """Test error response for non-get method."""
-    from client import client
-    req = "POST www.gremlins.com HTTP/1.1\r\nHost: me\r\n\r\n"
-    assert client(req).split(b'\r\n')[0] == b"HTTP/1.1 405 Method Not Allowed: GET only"
-
-
-@pytest.mark.parametrize("request, resp", BAD_GET_REQUESTS)
-def test_client_error(request, resp):
+@pytest.mark.parametrize("req, reason, resp", BAD_GET_REQUESTS)
+def test_client_error(req, reason, resp):
     """Test specific request errors."""
     from client import client
-    assert client(request).split(b'\r\n')[0] == b'HTTP/1.1 400 Bad Request: ' + resp
-
-
-@pytest.mark.parametrize("request", MALFORMED)
-def test_client_malformed(request):
-    """Test general malformed requests."""
-    from client import client
-    assert client(request).split(b'\r\n')[0] == b'HTTP/1.1 400 Bad Request: MALFORMED'
+    assert client(req).split(b'\r\n')[0] == b'HTTP/1.1 ' + reason + resp
 
 
 def test_client_valid():

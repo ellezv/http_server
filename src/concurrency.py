@@ -5,7 +5,7 @@ from gevent.server import StreamServer
 from gevent.monkey import patch_all
 
 
-def start_server(port=10000):
+def start_server(port=5000):  # pragma: no cover
     """Start stream server."""
     patch_all()
     sserver = StreamServer(('127.0.0.1', port), connection)
@@ -23,8 +23,8 @@ def connection(socket, address):
     server.handle_connection(socket)
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # pragma: no cover
     try:
         start_server(sys.argv[1])
-    except:
+    except IndexError:
         start_server()

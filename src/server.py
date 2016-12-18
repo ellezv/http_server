@@ -6,7 +6,7 @@ import mimetypes
 import sys
 
 
-def server(port=5000):
+def server(port=5000):  # pragma: no cover
     """Start server to receive message and echo back."""
     server = socket.socket(socket.AF_INET,
                            socket.SOCK_STREAM,
@@ -180,7 +180,7 @@ def directory_listing(path):
     return "<html><body>{}</body></html>".format(listing)
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # pragma: no cover
     try:
         server(int(sys.argv[1]))
     except IndexError:
