@@ -85,7 +85,7 @@ def parse_request(request):
         if lst[0].split()[2] != b"HTTP/1.1":
             if b"HTTP/1.1" in lst[0]:
                 raise IndexError
-            raise ValueError("400 Bad Request: HTTP/1.1 only")
+            raise ValueError("505 HTTP Version Not Supported: HTTP/1.1 only")
         headers = parse_headers(lst[1:-2])
         if b'Host' not in headers:
             raise ValueError("400 Bad Request: Host header required")
@@ -128,6 +128,8 @@ def resolve_uri(uri):
                 body = b''
             with open(path, r) as f:
                 body = f.read()
+        else:
+            raise Exception
         return body, mimetypes.guess_type(uri)[0]
     except Exception:
         raise ValueError("404 File Not Found")
