@@ -6,6 +6,14 @@ import mimetypes
 import sys
 
 
+def run_server():
+    """Start server."""
+    try:
+        server(int(sys.argv[1]))
+    except IndexError:
+        server()
+
+
 def server(port=5000):  # pragma: no cover
     """Start server to receive message and echo back."""
     server = socket.socket(socket.AF_INET,
@@ -33,7 +41,7 @@ def handle_connection(conn):
     request = b""
     response = b""
     buffer_length = 8
-    conn.settimeout(5)
+    conn.settimeout(7)
     try:
         while request[-4:] != b'\r\n\r\n':
             request += conn.recv(buffer_length)
@@ -41,6 +49,7 @@ def handle_connection(conn):
         body, file_type = resolve_uri(uri.decode("utf8"))
         response = response_ok(file_type, body)
     except ValueError as e:
+        print(e.args[0])
         response = response_error(e.args[0])
     except socket.timeout:
         response = response_error("400 Bad Request: Timed out.")
@@ -102,7 +111,10 @@ def parse_request(request):
         raise e
     except IndexError as e:
         raise ValueError("400 Bad Request: MALFORMED")
-    return lst[0].split()[1]
+    uri = lst[0].split()[1]
+    if len(uri) > 1 and uri.decode('utf8')[-1] == '/':
+        uri = uri[:-1]
+    return uri
 
 
 def parse_headers(headers_lst):
@@ -148,7 +160,7 @@ def build_error(phrase):
     <!DOCTYPE html>
     <html>
         <body>
-            <h2 style="color:pink">ERROR {code}</h2>
+            <h2 style="color:darkred">{code}</h2>
             <h4>{reason}</h4>
             <h5>{l}
         </body>
@@ -166,22 +178,19 @@ def directory_listing(path):
     atag = '<a style="display:block;margin:10px" href="{}">{}</a>'
     rel_path = path.split('webroot')[-1]
     if rel_path != '/':
-        prev_dir = rel_path.split('/')[-2]
-        if prev_dir:
-            listing += atag.format('/'.join(rel_path.split('/')[:-1]),
-                                   '&#128194; ' + rel_path.split('/')[-2])
+        prev_dir = os.path.dirname(rel_path)
+        if prev_dir == '/':
+            listing += atag.format(prev_dir, '&#128194; root')
         else:
-            listing += atag.format('/', '&#128194; root')
+            listing += atag.format(prev_dir,
+                                   '&#128194; ' + prev_dir.split('/')[-1])
     for f in os.listdir(path):
         fname = f
         if os.path.isdir('/'.join([path, f])):
             fname = f + '&#128194;'
-        listing += atag.format('/'.join([rel_path.split('/')[-1], f]), fname)
+        listing += atag.format(os.path.join(rel_path, f), fname)
     return "<html><body>{}</body></html>".format(listing)
 
 
 if __name__ == '__main__':  # pragma: no cover
-    try:
-        server(int(sys.argv[1]))
-    except IndexError:
-        server()
+    run_server()
