@@ -106,12 +106,14 @@ def test_resolve_uri_find_type(file_path, file_type):
 
 
 def test_directory_list_raise_err():
+    """Test directory_listing raises expected error."""
     from server import directory_listing
     with pytest.raises(OSError):
         directory_listing("/directory")
 
 
 def test_resolve_uri_directory():
+    """Test resolve uri will return correct body response and content type."""
     from server import resolve_uri
     response = ('<html><body><a style="display:block;margin:10px" href="/a_web_page.html">a_web_page.html</a><a style="display:block;margin:10px" href="/images">images&#128194;</a><a style="display:block;margin:10px" href="/make_time.py">make_time.py</a><a style="display:block;margin:10px" href="/sample.txt">sample.txt</a></body></html>', None)
     assert resolve_uri("/") == response

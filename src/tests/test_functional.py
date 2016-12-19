@@ -44,3 +44,10 @@ def test_client_valid():
     from server import response_ok
     req = "GET sample.txt HTTP/1.1\r\nHost: me\r\n\r\n"
     assert client(req)[:15] == response_ok("text/plain", body)[:15]
+
+
+def test_parse_headers_client_err():
+    """Test parse headers raises expected error."""
+    from client import parse_headers
+    with pytest.raises(IndexError):
+        parse_headers("something")
