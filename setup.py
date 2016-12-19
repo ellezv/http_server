@@ -5,7 +5,7 @@ from setuptools import setup
 setup(
     name="Http-server",
     description="Implementations of an http-server",
-    version=0.1,
+    version=0.2,
     author="Maelle Vance, Ford Fowler",
     author_email="maellevance@gmail.com, fordjfowler@gmail.com",
     license="MIT",
@@ -19,7 +19,8 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'client = client:main'
+            'client = client:client',
+            'server = server:server'
         ]
     }
 )
