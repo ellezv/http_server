@@ -1,6 +1,6 @@
 # HTTP Server
 
-This is an implementation of a socket server.  
+This is an implementation of a socket server.
 In this implementation, we create a server and a client.
 If the client request a file contained in the root, the server will serve it.
 If the client doesn't request properly, the server will respond appropriately.
@@ -16,7 +16,6 @@ We also implemented a concurrency module using Gevent that will allow us to hand
     - Tests:
         - *test_unit.py*
         - *test_functional.py*
-        - *test_concurrency.py*
 
 ## Use:
 We have been having trouble with entry points.
