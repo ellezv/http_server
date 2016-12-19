@@ -28,15 +28,18 @@ Alternatively you can open the client in another terminal and type `python3 clie
 ## Coverage:
 
 ```sh
----------- coverage: platform darwin, python 3.5.2-final-0 -----------
-Name                       Stmts   Miss  Cover   Missing
---------------------------------------------------------
-src/client.py                 18     10    44%   13-20, 23-24
-src/server.py                 14     14     0%   2-20
-src/tests/__init__.py          0      0   100%
-src/tests/test_server.py       4      0   100%
---------------------------------------------------------
-TOTAL                         36     24    33%
+---------- coverage: platform darwin, python 2.7.10-final-0 ----------
+Name                            Stmts   Miss  Cover   Missing
+-------------------------------------------------------------
+src/client.py                      42      0   100%
+src/concurrency.py                  7      7     0%   2-23
+src/server.py                     111     20    82%   33-48, 95, 98, 100, 171
+src/tests/__init__.py               0      0   100%
+src/tests/test_concurrency.py       0      0   100%
+src/tests/test_functional.py       21      0   100%
+src/tests/test_unit.py             46      0   100%
+-------------------------------------------------------------
+TOTAL                             227     27    88%
 ```
 
 ## Authors:
