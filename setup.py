@@ -10,10 +10,10 @@ setup(
     author_email="maellevance@gmail.com, fordjfowler@gmail.com",
     license="MIT",
     py_modules=[
-        'server', 'client'
+        'server', 'client', 'concurrency'
     ],
     package_dir={'': 'src'},
-    install_requires=[],
+    install_requires=['gevent'],
     extras_require={
         "test": ["tox", "pytest", "pytest-watch", "pytest-cov"]
     },
